@@ -19,7 +19,7 @@ const INFO_TEXT: &str =
 
 const ITEM_HEIGHT: usize = 4;
 
-struct TableColors {
+pub struct TableColors {
     buffer_bg: Color,
     header_bg: Color,
     header_fg: Color,
@@ -45,7 +45,7 @@ impl TableColors {
     }
 }
 
-struct Data {
+pub struct Data {
     name: String,
     address: String,
     email: String,
@@ -101,9 +101,9 @@ fn ui(f: &mut Frame, app: &mut App) {
 
     render_table(f, app, rects[0]);
 
-    //render_scrollbar(f, app, rects[0]);
+    render_scrollbar(f, app, rects[0]);
 
-    //render_footer(f, app, rects[1]);
+    render_footer(f, app, rects[1]);
 }
 
 fn render_table(f: &mut Frame, app: &mut App, area: Rect) {
@@ -134,7 +134,6 @@ fn render_table(f: &mut Frame, app: &mut App, area: Rect) {
             .style(Style::new().fg(app.colors.row_fg).bg(color))
             .height(4)
     });
-    let bar = " █ ";
     let t = Table::new(
         rows,
         [
@@ -148,14 +147,32 @@ fn render_table(f: &mut Frame, app: &mut App, area: Rect) {
     .header(header)
     .highlight_style(selected_style)
     .highlight_symbol(Text::from(vec![
-        "".into(),
-        bar.into(),
-        bar.into(),
-        "".into(),
+        "   ".into()
     ]))
     .bg(app.colors.buffer_bg)
     .highlight_spacing(HighlightSpacing::Always);
     f.render_stateful_widget(t, area, &mut app.state);
+}
+
+fn render_scrollbar(f: &mut Frame, app: &mut App, area: Rect) {
+    f.render_stateful_widget(
+        Scrollbar::default()
+            .orientation(ScrollbarOrientation::VerticalRight)
+            .begin_symbol(Some("↑"))
+            .end_symbol(Some("↓")),
+        area.inner(&Margin {
+            vertical: 1,
+            horizontal: 1,
+        }),
+        &mut app.scroll_state,
+    );
+}
+
+fn render_footer(f: &mut Frame, app: &mut App, area: Rect) {
+    let info_footer = Paragraph::new(Line::from(INFO_TEXT))
+        .style(Style::new().fg(app.colors.row_fg).bg(app.colors.buffer_bg))
+        .centered();
+    f.render_widget(info_footer, area);
 }
 
 pub struct App {
